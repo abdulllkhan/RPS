@@ -25,7 +25,7 @@ public class MainMenu extends JFrame {
 
         JButton startGameButton = new JButton("Start Game");
         JButton enterGameButton = new JButton("Enter Game");
-        JButton viewHighScoresButton = new JButton("View High Scores");
+        // JButton viewHighScoresButton = new JButton("View High Scores");
 
         setSize(500, 400);
 
@@ -43,23 +43,24 @@ public class MainMenu extends JFrame {
             }
         });
 
-        viewHighScoresButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                List<String> highScores = fetchHighScores();
-                updateHighScoresUI(highScores);
-            }
-        });
+        // viewHighScoresButton.addActionListener(new ActionListener() {
+        //     @Override
+        //     public void actionPerformed(ActionEvent e) {
+        //         List<String> highScores = fetchHighScores();
+        //         updateHighScoresUI(highScores);
+        //     }
+        // });
 
         JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
         panel.add(startGameButton);
         panel.add(enterGameButton);
-        panel.add(viewHighScoresButton);
+        // panel.add(viewHighScoresButton);
 
         highScoresLabel = new JLabel();
         panel.add(highScoresLabel);
 
         getContentPane().add(panel, BorderLayout.CENTER);
+        setVisible(true);
 
         setLocationRelativeTo(null);
     }
