@@ -62,6 +62,7 @@ public class JoinGamePage extends JFrame implements ActionListener {
 
     private void joinGame(int userId, String sessionCode) {
     try {
+        this.instanceInfoLocal.sessionCode  = sessionCode;
         URL url = new URL("http://localhost:8080/api/game/join");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
