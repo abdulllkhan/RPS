@@ -1,5 +1,8 @@
 package com.project.rpsui.GUI;
 import javax.swing.*;
+
+import org.springframework.stereotype.Component;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,14 +14,21 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 
+import org.json.JSONObject; 
+
+// @Component
 public class LoginSignupPage extends JFrame implements ActionListener {
 
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton, signupButton;
 
-    public LoginSignupPage() {
+    private InstanceInfo instanceInfo;
+
+    public LoginSignupPage(InstanceInfo instanceInfo) {
+    // public LoginSignupPage() {
         // setTitle("Login / Signup");
+        this.instanceInfo = instanceInfo;
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -71,6 +81,57 @@ public class LoginSignupPage extends JFrame implements ActionListener {
         }
     }
 
+    // private void login(String username, String password) throws NoSuchAlgorithmException, RuntimeException {
+    //     try {
+    //         URL url = new URL("http://localhost:8080/api/login");
+    //         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+    //         connection.setRequestMethod("POST");
+    //         connection.setRequestProperty("Content-Type", "application/json");
+
+    //         // converting password to SHA-256 hash
+
+    //         connection.setDoOutput(true);
+    //         // password = SHA256.getSHA256(password);
+    //         String requestBody = "{\"username\": \"" + username + "\", \"hashedPassword\": \"" + password + "\"}";
+    //         OutputStream outputStream = connection.getOutputStream();
+    //         outputStream.write(requestBody.getBytes());
+    //         outputStream.flush();
+
+    //         int responseCode = connection.getResponseCode();
+
+    //         BufferedReader reader;
+    //         if (responseCode == HttpURLConnection.HTTP_OK) {
+    //             reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+    //         } else {
+    //             reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+    //         }
+
+    //         StringBuilder response = new StringBuilder();
+    //         String line;
+    //         while ((line = reader.readLine()) != null) {
+    //             response.append(line);
+    //         }
+    //         reader.close();
+
+    //         // Parse JSON response
+    //         JSONObject jsonResponse = new JSONObject(response.toString());
+
+    //         // Get user_id from JSON response
+    //         String userId = jsonResponse.getString("user_id");
+
+    //         JOptionPane.showMessageDialog(null, "Logged in successfully. User ID: " + userId);
+
+    //         connection.disconnect();
+
+    //         instanceInfo.gamerId = userId;           
+    //     } catch (IOException ex) {
+    //         ex.printStackTrace();
+    //         JOptionPane.showMessageDialog(null, "Error occurred while making API call.");
+    //     }
+    // }
+
+
     private void login(String username, String password) throws NoSuchAlgorithmException, RuntimeException {
         try {
             URL url = new URL("http://localhost:8080/api/login");
@@ -103,6 +164,14 @@ public class LoginSignupPage extends JFrame implements ActionListener {
                 response.append(line);
             }
             reader.close();
+
+            ////////////////////////////
+            ////////////////////////////
+            ////////////////////////////
+            JSONObject jsonResponse = new JSONObject(response.toString());
+            Integer userId = jsonResponse.getInt("id");
+
+            instanceInfo.gamerId = userId;
 
             JOptionPane.showMessageDialog(null, response.toString());
 
@@ -155,6 +224,6 @@ public class LoginSignupPage extends JFrame implements ActionListener {
     
 
     public static void main(String[] args) {
-        new LoginSignupPage();
+        // new LoginSignupPage(new InstanceInfo());
     }
 }

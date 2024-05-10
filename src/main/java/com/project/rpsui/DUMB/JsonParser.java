@@ -1,4 +1,4 @@
-package com.project.rpsui.GUI;
+package com.project.rpsui.DUMB;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

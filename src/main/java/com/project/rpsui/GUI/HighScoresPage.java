@@ -11,7 +11,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
+
+// @Component
 public class HighScoresPage extends JFrame implements ActionListener {
     private JButton returnButton;
 
