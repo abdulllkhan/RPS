@@ -4,7 +4,7 @@
 ## Installation
 1. Clone the repository to your local machine:
 
-`git clone git@github.com:abdulllkhan/rock-paper-scissors-server.git`
+`git clone git@github.com:siyanlau/RPS.git`
 
 2. Navigate to the project directory:
 
