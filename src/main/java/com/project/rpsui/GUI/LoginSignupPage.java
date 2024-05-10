@@ -113,22 +113,66 @@ public class LoginSignupPage extends JFrame implements ActionListener {
             while ((line = reader.readLine()) != null) {
                 response.append(line);
             }
-            reader.close();
-
-            ////////////////////////////
-            ////////////////////////////
-            ////////////////////////////
-            JSONObject jsonResponse = new JSONObject(response.toString());
-            Integer userId = jsonResponse.getInt("id");
-
-            instanceInfoLocal.gamerId = userId;
-
+            reader.close();          
+            
             JOptionPane.showMessageDialog(null, response.toString());
-
+            
             connection.disconnect();
 
-            dispose();
-            new MainMenu(instanceInfoLocal);
+            // if (responseCode == HttpURLConnection.HTTP_OK) {
+            //     ////////////////////////////
+            //     ////////////////////////////
+            //     ////////////////////////////
+            //     JSONObject jsonResponse = new JSONObject(response.toString());
+            //     Integer userId = jsonResponse.getInt("id");
+    
+            //     instanceInfoLocal.gamerId = userId;
+
+            //     dispose();
+            //     new MainMenu(instanceInfoLocal);
+                
+            // }
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                JSONObject jsonResponse = new JSONObject(response.toString());
+                int userId = jsonResponse.getInt("id");
+    
+                instanceInfoLocal.gamerId = userId;
+    
+                URL gamerDetailsUrl = new URL("http://localhost:8080/api/user/" + userId);
+                HttpURLConnection gamerDetailsConnection = (HttpURLConnection) gamerDetailsUrl.openConnection();
+                gamerDetailsConnection.setRequestMethod("GET");
+                gamerDetailsConnection.setRequestProperty("Content-Type", "application/json");
+    
+                int gamerDetailsResponseCode = gamerDetailsConnection.getResponseCode();
+    
+                BufferedReader gamerDetailsReader;
+                if (gamerDetailsResponseCode == HttpURLConnection.HTTP_OK) {
+                    gamerDetailsReader = new BufferedReader(new InputStreamReader(gamerDetailsConnection.getInputStream()));
+                } else {
+                    gamerDetailsReader = new BufferedReader(new InputStreamReader(gamerDetailsConnection.getErrorStream()));
+                }
+    
+                StringBuilder gamerDetailsResponse = new StringBuilder();
+                String gamerDetailsLine;
+                while ((gamerDetailsLine = gamerDetailsReader.readLine()) != null) {
+                    gamerDetailsResponse.append(gamerDetailsLine);
+                }
+                gamerDetailsReader.close();
+    
+                JSONObject gamerDetailsJson = new JSONObject(gamerDetailsResponse.toString());
+                String gamerName = gamerDetailsJson.getString("username");
+                long createdAt = gamerDetailsJson.getLong("createdAt");
+
+                instanceInfoLocal.username = gamerName;
+                instanceInfoLocal.createdAt = createdAt;
+
+                gamerDetailsConnection.disconnect();
+                
+                dispose();
+                new MainMenu(instanceInfoLocal);
+                
+            }
 
         } catch (IOException ex) {
             ex.printStackTrace();

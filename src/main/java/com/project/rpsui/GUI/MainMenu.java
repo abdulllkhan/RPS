@@ -42,7 +42,8 @@ public class MainMenu extends JFrame {
         enterGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(MainMenu.this, "Enter Game button clicked");
+                dispose();
+                new JoinGamePage(instanceInfo);
             }
         });
 
@@ -68,65 +69,6 @@ public class MainMenu extends JFrame {
         setVisible(true);
 
         setLocationRelativeTo(null);
-    }
-
-    private List<String> fetchHighScores() {
-        List<String> highScores = new ArrayList<>();
-        HttpURLConnection conn = null;
-        BufferedReader reader = null;
-        try {
-
-            URL url = new URL("http://localhost:8080/api/user/highscore");
-
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String line;
-                StringBuilder response = new StringBuilder();
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                JSONObject jsonResponse = new JSONObject(response.toString());
-                JSONArray highScoresArray = jsonResponse.getJSONArray("highScores");
-                for (int i = 0; i < highScoresArray.length(); i++) {
-                    JSONObject scoreObject = highScoresArray.getJSONObject(i);
-                    int score = scoreObject.getInt("score");
-                    String username = scoreObject.getString("username");
-                    highScores.add(username + ": " + score);
-                }
-            } else {
-                System.out.println("Error: HTTP " + responseCode);
-            }
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-        return highScores;
-    }
-
-    private void updateHighScoresUI(List<String> highScores) {
-        StringBuilder sb = new StringBuilder("<html><b>High Scores:</b><br>");
-        if (highScores != null && !highScores.isEmpty()) {
-            for (String score : highScores) {
-                sb.append(score).append("<br>");
-            }
-        } else {
-            sb.append("No high scores available.");
-        }
-        sb.append("</html>");
-        highScoresLabel.setText(sb.toString());
     }
 
     public static void main(String[] args) {
