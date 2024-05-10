@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -15,14 +16,16 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.stereotype.Component;
 
 // @Component
 public class MainMenu extends JFrame {
     private JLabel highScoresLabel;
 
+    private InstanceInfo instanceInfoLocal;
+
     // public MainMenu() {
     public MainMenu(InstanceInfo instanceInfo) {
+        this.instanceInfoLocal = instanceInfo;
         setTitle("Game Menu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -35,7 +38,8 @@ public class MainMenu extends JFrame {
         startGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(MainMenu.this, "Start Game button clicked");
+                // JOptionPane.showMessageDialog(MainMenu.this, "Start Game button clicked");
+                startNewGame(instanceInfo.getGamerId()); // Assuming you have a method to get the user ID
             }
         });
 
@@ -53,7 +57,7 @@ public class MainMenu extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // TODO Auto-generated method stub
                 dispose();
-                new HighScoresPage(instanceInfo);
+                new HighScoresPage(instanceInfoLocal);
             }
         });
 
@@ -70,6 +74,59 @@ public class MainMenu extends JFrame {
 
         setLocationRelativeTo(null);
     }
+
+    private void startNewGame(int userId) {
+    try {
+        URL url = new URL("http://localhost:8080/api/game");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+
+        connection.setDoOutput(true);
+        String requestBody = "{\"userId\": " + userId + "}";
+        OutputStream outputStream = connection.getOutputStream();
+        outputStream.write(requestBody.getBytes());
+        outputStream.flush();
+
+        int responseCode = connection.getResponseCode();
+
+        BufferedReader reader;
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        } else {
+            reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+        }
+
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        reader.close();
+
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            JSONObject jsonResponse = new JSONObject(response.toString());
+            String roomMessage = jsonResponse.getString("message");
+            String sessionCode = jsonResponse.getString("sessionCode");
+            JOptionPane.showMessageDialog(MainMenu.this, roomMessage + "\nSession Code: " + sessionCode);
+
+            instanceInfoLocal.setSessionCode(sessionCode);
+
+            dispose();
+            // new GamePage(instanceInfoLocal);
+            new WaitingRoomPage(instanceInfoLocal);
+
+        } else {
+            JOptionPane.showMessageDialog(MainMenu.this, response.toString());
+        }
+
+        connection.disconnect();
+    } catch (IOException | JSONException ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(MainMenu.this, "Error occurred while making API call.");
+    }
+}
 
     public static void main(String[] args) {
         // SwingUtilities.invokeLater(() -> {

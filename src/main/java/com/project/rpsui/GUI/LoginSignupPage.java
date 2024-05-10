@@ -168,7 +168,7 @@ public class LoginSignupPage extends JFrame implements ActionListener {
                 instanceInfoLocal.createdAt = createdAt;
 
                 gamerDetailsConnection.disconnect();
-                
+
                 dispose();
                 new MainMenu(instanceInfoLocal);
                 
@@ -189,7 +189,7 @@ public class LoginSignupPage extends JFrame implements ActionListener {
             connection.setRequestProperty("Content-Type", "application/json");
     
             connection.setDoOutput(true);
-            password = SHA256.getSHA256(password);
+            // password = SHA256.getSHA256(password);
             String requestBody = "{\"username\": \"" + username + "\", \"hashedPassword\": \"" + password + "\"}";
             OutputStream outputStream = connection.getOutputStream();
             outputStream.write(requestBody.getBytes());
