@@ -23,12 +23,12 @@ public class LoginSignupPage extends JFrame implements ActionListener {
     private JPasswordField passwordField;
     private JButton loginButton, signupButton;
 
-    private InstanceInfo instanceInfo;
+    private InstanceInfo instanceInfoLocal;
 
     public LoginSignupPage(InstanceInfo instanceInfo) {
     // public LoginSignupPage() {
         // setTitle("Login / Signup");
-        this.instanceInfo = instanceInfo;
+        this.instanceInfoLocal = instanceInfo;
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -81,56 +81,6 @@ public class LoginSignupPage extends JFrame implements ActionListener {
         }
     }
 
-    // private void login(String username, String password) throws NoSuchAlgorithmException, RuntimeException {
-    //     try {
-    //         URL url = new URL("http://localhost:8080/api/login");
-    //         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-    //         connection.setRequestMethod("POST");
-    //         connection.setRequestProperty("Content-Type", "application/json");
-
-    //         // converting password to SHA-256 hash
-
-    //         connection.setDoOutput(true);
-    //         // password = SHA256.getSHA256(password);
-    //         String requestBody = "{\"username\": \"" + username + "\", \"hashedPassword\": \"" + password + "\"}";
-    //         OutputStream outputStream = connection.getOutputStream();
-    //         outputStream.write(requestBody.getBytes());
-    //         outputStream.flush();
-
-    //         int responseCode = connection.getResponseCode();
-
-    //         BufferedReader reader;
-    //         if (responseCode == HttpURLConnection.HTTP_OK) {
-    //             reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-    //         } else {
-    //             reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-    //         }
-
-    //         StringBuilder response = new StringBuilder();
-    //         String line;
-    //         while ((line = reader.readLine()) != null) {
-    //             response.append(line);
-    //         }
-    //         reader.close();
-
-    //         // Parse JSON response
-    //         JSONObject jsonResponse = new JSONObject(response.toString());
-
-    //         // Get user_id from JSON response
-    //         String userId = jsonResponse.getString("user_id");
-
-    //         JOptionPane.showMessageDialog(null, "Logged in successfully. User ID: " + userId);
-
-    //         connection.disconnect();
-
-    //         instanceInfo.gamerId = userId;           
-    //     } catch (IOException ex) {
-    //         ex.printStackTrace();
-    //         JOptionPane.showMessageDialog(null, "Error occurred while making API call.");
-    //     }
-    // }
-
 
     private void login(String username, String password) throws NoSuchAlgorithmException, RuntimeException {
         try {
@@ -171,11 +121,15 @@ public class LoginSignupPage extends JFrame implements ActionListener {
             JSONObject jsonResponse = new JSONObject(response.toString());
             Integer userId = jsonResponse.getInt("id");
 
-            instanceInfo.gamerId = userId;
+            instanceInfoLocal.gamerId = userId;
 
             JOptionPane.showMessageDialog(null, response.toString());
 
             connection.disconnect();
+
+            dispose();
+            new MainMenu(instanceInfoLocal);
+
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error occurred while making API call.");

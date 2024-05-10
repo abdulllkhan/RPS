@@ -21,7 +21,8 @@ import org.springframework.stereotype.Component;
 public class MainMenu extends JFrame {
     private JLabel highScoresLabel;
 
-    public MainMenu() {
+    // public MainMenu() {
+    public MainMenu(InstanceInfo instanceInfo) {
         setTitle("Game Menu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -51,7 +52,7 @@ public class MainMenu extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // TODO Auto-generated method stub
                 dispose();
-                new HighScoresPage();
+                new HighScoresPage(instanceInfo);
             }
         });
 
@@ -129,9 +130,9 @@ public class MainMenu extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            MainMenu mainMenu = new MainMenu();
-            mainMenu.setVisible(true);
-        });
+        // SwingUtilities.invokeLater(() -> {
+        //     MainMenu mainMenu = new MainMenu();
+        //     mainMenu.setVisible(true);
+        // });
     }
 }

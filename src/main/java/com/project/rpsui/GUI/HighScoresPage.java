@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,10 @@ import org.springframework.stereotype.Component;
 public class HighScoresPage extends JFrame implements ActionListener {
     private JButton returnButton;
 
-    public HighScoresPage() {
+    public InstanceInfo instanceInfoLocal;
+
+    public HighScoresPage(InstanceInfo instanceInfo) {
+        this.instanceInfoLocal = instanceInfo;
         setTitle("Top 10 High Scores");
         setSize(300, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -87,12 +91,12 @@ public class HighScoresPage extends JFrame implements ActionListener {
         if (e.getSource() == returnButton) {
             // Close the high scores page
             dispose();
-            new MainMenu();
+            new MainMenu(instanceInfoLocal);
             // Open the main menu
         }
     }
 
     public static void main(String[] args) {
-        new HighScoresPage();
+        // new HighScoresPage();
     }
 }
