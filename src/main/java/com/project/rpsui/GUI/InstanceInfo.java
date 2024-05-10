@@ -15,5 +15,17 @@ import lombok.Setter;
 public class InstanceInfo {
 
     public Integer gamerId;
+
+    public String username;
+
+    public Long createdAt;
+
+    public String sessionCode;
+
+    public Integer sessionId;   
+
+    public Integer opponentId;
+
+    public String opponentUsername;
     
 }
