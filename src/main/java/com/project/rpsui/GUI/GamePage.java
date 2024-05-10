@@ -2,7 +2,8 @@ package com.project.rpsui.GUI;
 
 import javax.swing.*;
 
-import org.apache.logging.log4j.CloseableThreadContext.Instance;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -24,6 +25,7 @@ public class GamePage extends JFrame implements ActionListener {
     public InstanceInfo instanceInfoLocal;
 
     public GamePage(InstanceInfo instanceInfo) {
+        this.instanceInfoLocal = instanceInfo;
         setTitle("Rock Paper Scissors Game");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,6 +73,10 @@ public class GamePage extends JFrame implements ActionListener {
 
         add(mainPanel);
         setVisible(true);
+
+        // everthing is breaking down here
+        fetchMessages();
+
     }
 
     @Override
@@ -82,63 +88,115 @@ public class GamePage extends JFrame implements ActionListener {
         } else if (e.getSource() == scissorsButton) {
             // Handle scissors button action
         } else if (e.getSource() == sendButton) {
-            // Handle send button action
             String message = messageField.getText().trim();
             if (!message.isEmpty()) {
                 sendMessage(instanceInfoLocal.getUsername(), message, instanceInfoLocal.getSessionCode());
-                messagesArea.append("You: " + message + "\n");
+                messagesArea.append(instanceInfoLocal.getUsername() + ": " + message + "\n");
                 messageField.setText("");
             }
         }
     }
 
     private void sendMessage(String sender, String message, String sessionCode) {
-    try {
-        URL url = new URL("http://localhost:8080/api/message/send");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        try {
+            URL url = new URL("http://localhost:8080/api/message/send");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
 
-        connection.setDoOutput(true);
-        String requestBody = "{\"sender\": \"" + sender + "\", \"message\": \"" + message + "\", \"sessionCode\": \"" + sessionCode + "\"}";
-        OutputStream outputStream = connection.getOutputStream();
-        outputStream.write(requestBody.getBytes());
-        outputStream.flush();
+            connection.setDoOutput(true);
+            String requestBody = "{\"sender\": \"" + sender + "\", \"message\": \"" + message + "\", \"sessionCode\": \"" + sessionCode + "\"}";
+            OutputStream outputStream = connection.getOutputStream();
+            outputStream.write(requestBody.getBytes());
+            outputStream.flush();
 
-        int responseCode = connection.getResponseCode();
+            int responseCode = connection.getResponseCode();
 
-        BufferedReader reader;
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        } else {
-            reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            BufferedReader reader;
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            } else {
+                reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            }
+
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                JSONObject jsonResponse = new JSONObject(response.toString());
+                // String successMessage = jsonResponse.getString("message");
+                // JOptionPane.showMessageDialog(null, successMessage);
+            } else {
+                JOptionPane.showMessageDialog(null, response.toString());
+            }
+
+            connection.disconnect();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error occurred while making API call.");
         }
-
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
-        reader.close();
-
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            JSONObject jsonResponse = new JSONObject(response.toString());
-            String successMessage = jsonResponse.getString("message");
-            JOptionPane.showMessageDialog(null, successMessage);
-        } else {
-            JOptionPane.showMessageDialog(null, response.toString());
-        }
-
-        connection.disconnect();
-    } catch (IOException ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error occurred while making API call.");
     }
-}
 
+    private void fetchMessages() {
+        new Thread(() -> {
+            try {
+                while (true) {
+                    URL url = new URL("http://localhost:8080/api/message/fetch/" + instanceInfoLocal.getSessionCode() + "?username=" + instanceInfoLocal.getUsername());
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
 
-    public static void main(String[] args) {
-        // SwingUtilities.invokeLater(() -> new GamePage());
+                    int responseCode = connection.getResponseCode();
+
+                    BufferedReader reader;
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    } else {
+                        reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+                    }
+
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    reader.close();
+
+                    JSONObject jsonResponse = new JSONObject(response.toString());
+                    boolean hasMessages = jsonResponse.getBoolean("hasMessages");
+
+                    if (hasMessages) {
+                        int messageCount = jsonResponse.getInt("messageCount");
+                        JSONArray messagesArray = jsonResponse.getJSONArray("messages");
+                        for (int i = 0; i < messageCount; i++) {
+                            JSONObject messageObject = messagesArray.getJSONObject(i);
+                            String message = messageObject.getString("message");
+                            String sender = messageObject.getString("sender");
+                            long createdAt = messageObject.getLong("createdAt");
+                            displayMessage(sender, message, createdAt);
+                        }
+                    }
+
+                    Thread.sleep(1000); // Fetch new messages every second
+                }
+            } catch (IOException | JSONException | InterruptedException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error occurred while fetching messages.");
+            }
+        }).start();
     }
+
+    private void displayMessage(String sender, String message, long createdAt) {
+        SwingUtilities.invokeLater(() -> {
+            messagesArea.append(sender + ": " + message + "\n");
+        });
+    }
+
+    // public static void main(String[] args) {
+    //     // SwingUtilities.invokeLater(() -> new GamePage());
+    // }
 }

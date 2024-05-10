@@ -73,17 +73,22 @@ public class WaitingRoomPage extends JFrame {
 
                     if (!isVacant) {
                         dispose();
-                        instanceInfo.setOpponentId(jsonResponse.getInt("opponentId"));
-                        instanceInfo.setOpponentUsername(jsonResponse.getString("opponentUsername"));
+                        Integer userId1 = jsonResponse.getInt("user1Id");
+                        Integer userId2 = jsonResponse.getInt("user2Id");
+                        if (userId1 == instanceInfo.getGamerId()) {
+                            instanceInfo.setOpponentId(userId2);
+                        } else {
+                            instanceInfo.setOpponentId(userId1);
+                        }
                         new GamePage(instanceInfo);
                         break;
                     }
 
-                    Thread.sleep(1000); // Poll every second
+                    Thread.sleep(3000); // Poll every second
                 }
             } catch (IOException | JSONException | InterruptedException ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Error occurred while fetching room details.");
+                JOptionPane.showMessageDialog(null, "Error occurred while fetching room details." + ex.getMessage());
             }
         }).start();
     }
