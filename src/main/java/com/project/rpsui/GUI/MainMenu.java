@@ -12,8 +12,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gson.Gson;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,19 +23,15 @@ public class MainMenu extends JFrame {
         setTitle("Game Menu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Create buttons
         JButton startGameButton = new JButton("Start Game");
         JButton enterGameButton = new JButton("Enter Game");
         JButton viewHighScoresButton = new JButton("View High Scores");
 
-        // Set size of the window
         setSize(500, 400);
 
-        // Add action listeners to buttons
         startGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Add code to handle "Start Game" button click
                 JOptionPane.showMessageDialog(MainMenu.this, "Start Game button clicked");
             }
         });
@@ -45,7 +39,6 @@ public class MainMenu extends JFrame {
         enterGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Add code to handle "Enter Game" button click
                 JOptionPane.showMessageDialog(MainMenu.this, "Enter Game button clicked");
             }
         });
@@ -53,14 +46,11 @@ public class MainMenu extends JFrame {
         viewHighScoresButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Fetch high scores from API
                 List<String> highScores = fetchHighScores();
-                // Update UI with high scores
                 updateHighScoresUI(highScores);
             }
         });
 
-        // Add buttons to panel
         JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
         panel.add(startGameButton);
         panel.add(enterGameButton);
@@ -69,10 +59,8 @@ public class MainMenu extends JFrame {
         highScoresLabel = new JLabel();
         panel.add(highScoresLabel);
 
-        // Add panel to frame
         getContentPane().add(panel, BorderLayout.CENTER);
 
-        // Center frame on screen
         setLocationRelativeTo(null);
     }
 
@@ -81,22 +69,19 @@ public class MainMenu extends JFrame {
         HttpURLConnection conn = null;
         BufferedReader reader = null;
         try {
-            // Create URL object
+
             URL url = new URL("http://localhost:8080/api/user/highscore");
-            // Open connection
+
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-            // Get response code
             int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                // Read response
                 reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 String line;
                 StringBuilder response = new StringBuilder();
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                // Parse JSON response
                 JSONObject jsonResponse = new JSONObject(response.toString());
                 JSONArray highScoresArray = jsonResponse.getJSONArray("highScores");
                 for (int i = 0; i < highScoresArray.length(); i++) {
@@ -106,13 +91,11 @@ public class MainMenu extends JFrame {
                     highScores.add(username + ": " + score);
                 }
             } else {
-                // Handle HTTP error
                 System.out.println("Error: HTTP " + responseCode);
             }
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         } finally {
-            // Close connections
             if (reader != null) {
                 try {
                     reader.close();
