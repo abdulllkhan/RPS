@@ -15,11 +15,14 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
+// @Component
 public class MainMenu extends JFrame {
     private JLabel highScoresLabel;
 
-    public MainMenu() {
+    // public MainMenu() {
+    public MainMenu(InstanceInfo instanceInfo) {
         setTitle("Game Menu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -44,10 +47,12 @@ public class MainMenu extends JFrame {
         });
 
         viewHighScoresButton.addActionListener(new ActionListener() {
+            
             @Override
             public void actionPerformed(ActionEvent e) {
-                List<String> highScores = fetchHighScores();
-                updateHighScoresUI(highScores);
+                // TODO Auto-generated method stub
+                dispose();
+                new HighScoresPage(instanceInfo);
             }
         });
 
@@ -60,6 +65,7 @@ public class MainMenu extends JFrame {
         panel.add(highScoresLabel);
 
         getContentPane().add(panel, BorderLayout.CENTER);
+        setVisible(true);
 
         setLocationRelativeTo(null);
     }
@@ -124,9 +130,9 @@ public class MainMenu extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            MainMenu mainMenu = new MainMenu();
-            mainMenu.setVisible(true);
-        });
+        // SwingUtilities.invokeLater(() -> {
+        //     MainMenu mainMenu = new MainMenu();
+        //     mainMenu.setVisible(true);
+        // });
     }
 }

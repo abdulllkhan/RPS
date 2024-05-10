@@ -1,5 +1,8 @@
 package com.project.rpsui.GUI;
 import javax.swing.*;
+
+import org.springframework.stereotype.Component;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,14 +14,21 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 
+import org.json.JSONObject; 
+
+// @Component
 public class LoginSignupPage extends JFrame implements ActionListener {
 
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton, signupButton;
 
-    public LoginSignupPage() {
+    private InstanceInfo instanceInfoLocal;
+
+    public LoginSignupPage(InstanceInfo instanceInfo) {
+    // public LoginSignupPage() {
         // setTitle("Login / Signup");
+        this.instanceInfoLocal = instanceInfo;
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -71,6 +81,7 @@ public class LoginSignupPage extends JFrame implements ActionListener {
         }
     }
 
+
     private void login(String username, String password) throws NoSuchAlgorithmException, RuntimeException {
         try {
             URL url = new URL("http://localhost:8080/api/login");
@@ -104,9 +115,21 @@ public class LoginSignupPage extends JFrame implements ActionListener {
             }
             reader.close();
 
+            ////////////////////////////
+            ////////////////////////////
+            ////////////////////////////
+            JSONObject jsonResponse = new JSONObject(response.toString());
+            Integer userId = jsonResponse.getInt("id");
+
+            instanceInfoLocal.gamerId = userId;
+
             JOptionPane.showMessageDialog(null, response.toString());
 
             connection.disconnect();
+
+            dispose();
+            new MainMenu(instanceInfoLocal);
+
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error occurred while making API call.");
@@ -155,6 +178,6 @@ public class LoginSignupPage extends JFrame implements ActionListener {
     
 
     public static void main(String[] args) {
-        new LoginSignupPage();
+        // new LoginSignupPage(new InstanceInfo());
     }
 }

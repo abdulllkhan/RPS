@@ -1,4 +1,4 @@
-package com.project.rpsui.GUI;
+package com.project.rpsui.DUMB;
 
 import java.io.BufferedReader;
 import java.io.IOException;
