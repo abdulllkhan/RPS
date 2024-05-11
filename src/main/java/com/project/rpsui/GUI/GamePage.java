@@ -20,9 +20,10 @@ public class GamePage extends JFrame implements ActionListener {
 
     private JTextArea messagesArea;
     private JTextField messageField;
-    private JButton rockButton, paperButton, scissorsButton, sendButton;
-
+    private JButton rockButton, paperButton, scissorsButton, sendButton, exitButton; // Add exitButton
     public InstanceInfo instanceInfoLocal;
+    public Integer roundCount = 0;
+    private volatile boolean running = true;
 
     public GamePage(InstanceInfo instanceInfo) {
         this.instanceInfoLocal = instanceInfo;
@@ -71,10 +72,15 @@ public class GamePage extends JFrame implements ActionListener {
 
         mainPanel.add(messagePanel, BorderLayout.CENTER);
 
+        // Add exit button
+        exitButton = new JButton("Exit Game");
+        exitButton.addActionListener(this);
+        mainPanel.add(exitButton, BorderLayout.SOUTH);
+
         add(mainPanel);
         setVisible(true);
 
-        // everthing is breaking down here
+        // Everything is breaking down here
         fetchMessages();
 
     }
@@ -82,11 +88,11 @@ public class GamePage extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == rockButton) {
-            // Handle rock button action
+            playMove("rock");
         } else if (e.getSource() == paperButton) {
-            // Handle paper button action
+            playMove("paper");
         } else if (e.getSource() == scissorsButton) {
-            // Handle scissors button action
+            playMove("scissors");
         } else if (e.getSource() == sendButton) {
             String message = messageField.getText().trim();
             if (!message.isEmpty()) {
@@ -94,6 +100,109 @@ public class GamePage extends JFrame implements ActionListener {
                 messagesArea.append(instanceInfoLocal.getUsername() + ": " + message + "\n");
                 messageField.setText("");
             }
+        } else if (e.getSource() == exitButton) {
+            running = false;
+            if(roundCount < 3) {
+                JOptionPane.showMessageDialog(null, "You have left the game.");
+            } else {
+                dispose(); 
+                new GameEndPage(instanceInfoLocal);
+                // // call an api to fetch the result of the game
+                // try {
+                //     URL url = new URL("http://localhost:8080/api/game/winner/" + instanceInfoLocal.getSessionCode());
+                //     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                //     connection.setRequestMethod("GET");
+                    
+                //     int responseCode = connection.getResponseCode();
+                    
+                //     BufferedReader reader;
+                //     if (responseCode == HttpURLConnection.HTTP_OK) {
+                //         reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                //     } else {
+                //         reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+                //     }
+                    
+                //     StringBuilder response = new StringBuilder();
+                //     String line;
+                //     while ((line = reader.readLine()) != null) {
+                //         response.append(line);
+                //     }
+                //     reader.close();
+                    
+                //     JSONObject jsonResponse = new JSONObject(response.toString());
+                //     String winner = jsonResponse.getString("winnerName");
+                //     JOptionPane.showMessageDialog(null, "Winner of the game is: " + winner);
+                    
+                //     connection.disconnect();
+                    
+                // } catch (IOException | JSONException ex) {
+                //     ex.printStackTrace();
+                //     JOptionPane.showMessageDialog(null, "Error occurred while making API call.");
+                // }
+            }
+            // instanceInfoLocal.setSessionCode(null);
+            // instanceInfoLocal.setOpponentId(null);
+            // instanceInfoLocal.setOpponentUsername(null);
+            // instanceInfoLocal.getSessionId();
+            
+            // new MainMenu(instanceInfoLocal);
+        }
+    }
+
+    private void playMove(String move) {
+        try {
+            URL url = new URL("http://localhost:8080/api/game/play");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+
+            connection.setDoOutput(true);
+            String requestBody = "{\"userId\": " + instanceInfoLocal.getGamerId() + ", \"sessionCode\": \"" + instanceInfoLocal.getSessionCode() + "\", \"move\": \"" + move + "\", \"round\": " + roundCount + "}";
+            OutputStream outputStream = connection.getOutputStream();
+            outputStream.write(requestBody.getBytes());
+            outputStream.flush();
+
+            int responseCode = connection.getResponseCode();
+
+            BufferedReader reader;
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            } else {
+                reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            }
+
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                JSONObject jsonResponse = new JSONObject(response.toString());
+                int roomId = jsonResponse.getInt("roomId");
+                String successMessage = jsonResponse.getString("message");
+                String sessionCode = jsonResponse.getString("sessionCode");
+                // JOptionPane.showMessageDialog(null, successMessage);
+                sendMessage(instanceInfoLocal.getUsername(), "Played round " + roundCount, sessionCode);
+                roundCount++; 
+                // if (roundCount >= 3) { 
+                //     dispose(); 
+                //     // instanceInfoLocal.setSessionCodenull);
+                //     // instanceInfoLocal.setOpponentId(null);
+                //     // instanceInfoLocal.setOpponentUsername(null);
+                //     // instanceInfoLocal.getSessionId();
+                //     new GameEndPage(instanceInfoLocal); // Return to main menu
+                // }
+            } else {
+                JOptionPane.showMessageDialog(null, response.toString());
+            }
+
+            connection.disconnect();
+        } catch (IOException | JSONException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error occurred while making API call.");
         }
     }
 
@@ -145,7 +254,7 @@ public class GamePage extends JFrame implements ActionListener {
     private void fetchMessages() {
         new Thread(() -> {
             try {
-                while (true) {
+                while (running) {
                     URL url = new URL("http://localhost:8080/api/message/fetch/" + instanceInfoLocal.getSessionCode() + "?username=" + instanceInfoLocal.getUsername());
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
@@ -161,7 +270,9 @@ public class GamePage extends JFrame implements ActionListener {
 
                     StringBuilder response = new StringBuilder();
                     String line;
-                    while ((line = reader.readLine()) != null) {
+                    while (true) { // Changed to true to continuously fetch messages
+                        line = reader.readLine();
+                        if (line == null) break; // Break loop when end of stream is reached
                         response.append(line);
                     }
                     reader.close();
@@ -195,8 +306,4 @@ public class GamePage extends JFrame implements ActionListener {
             messagesArea.append(sender + ": " + message + "\n");
         });
     }
-
-    // public static void main(String[] args) {
-    //     // SwingUtilities.invokeLater(() -> new GamePage());
-    // }
 }

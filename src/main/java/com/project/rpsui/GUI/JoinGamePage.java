@@ -17,12 +17,10 @@ import java.net.URL;
 public class JoinGamePage extends JFrame implements ActionListener {
 
     private JTextField sessionCodeField;
-    private JButton joinButton;
-
+    private JButton joinButton, returnButton; // Add returnButton
     public InstanceInfo instanceInfoLocal;
 
     public JoinGamePage(InstanceInfo instanceInfo) {
-    // public JoinGamePage() {
         this.instanceInfoLocal = instanceInfo;
         setTitle("Join Game");
         setSize(400, 200);
@@ -42,6 +40,11 @@ public class JoinGamePage extends JFrame implements ActionListener {
         joinButton.addActionListener(this);
         inputPanel.add(joinButton);
 
+        // Add returnButton and ActionListener
+        returnButton = new JButton("Return to Main Menu");
+        returnButton.addActionListener(this);
+        inputPanel.add(returnButton);
+
         mainPanel.add(inputPanel, BorderLayout.CENTER);
 
         add(mainPanel);
@@ -53,13 +56,15 @@ public class JoinGamePage extends JFrame implements ActionListener {
         if (e.getSource() == joinButton) {
             String sessionCode = sessionCodeField.getText().trim();
             if (!sessionCode.isEmpty()) {
-                joinGame(instanceInfoLocal.getGamerId(), sessionCode); // Assuming user ID is 10
+                joinGame(instanceInfoLocal.getGamerId(), sessionCode);
             } else {
                 JOptionPane.showMessageDialog(null, "Please enter a session code.");
             }
+        } else if (e.getSource() == returnButton) {
+            dispose(); 
+            new MainMenu(instanceInfoLocal);
         }
     }
-
     private void joinGame(int userId, String sessionCode) {
     try {
         this.instanceInfoLocal.sessionCode  = sessionCode;
