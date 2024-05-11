@@ -19,3 +19,12 @@
 `java -jar build/libs/rpsui-0.0.1-SNAPSHOT.jar`
 
 
+## Sign Up, Login In, Join Game
+1. Navigate to `RPS` -> `src` -> `main` -> `java` -> `com` -> `project` -> `rpsui`.
+2. Run `RpsuiApplication.java`. 
+3. Sign up with a username and password.
+4. Login with the account just created.
+5. Run `RpsuiApplication.java` again to create a different instance.
+6. Repeat steps 3 and 4.
+7. Copy and paste the code into the second game panel to join a game session.
+
