@@ -23,6 +23,8 @@ public class GameEndPage extends JFrame implements ActionListener{
 
     public GameEndPage(InstanceInfo instanceInfo) {
 
+        this.instanceInfoLocal = instanceInfo;
+
         setTitle("Game Over");
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
